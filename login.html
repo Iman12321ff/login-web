@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Login Multi-Akun</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login ke Sistem</h2>
+    <form onsubmit="loginUser(event)">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required>
+      </div>
+      <button type="submit" class="login-button">Login</button>
+    </form>
+
+    <div id="error-message" class="error"></div>
+
+    <div id="recovery-section" style="display: none;">
+      <p>Password atau username salah. Untuk mereset, jawab pertanyaan keamanan:</p>
+      <label>Siapa nama sahabat dekatmu?</label>
+      <input type="text" id="securityAnswer" required>
+      <button onclick="checkSecurityAnswer()">Lanjut</button>
+    </div>
+
+    <div id="reset-section" style="display: none;">
+      <h3>Perbaikan Akun</h3>
+      <input type="text" id="newUsername" placeholder="Username Baru" required>
+      <input type="password" id="newPassword" placeholder="Password Baru" required>
+      <button onclick="saveNewAccount()">Simpan</button>
+    </div>
+
+    <p style="margin-top: 20px; text-align: center;">
+      Belum punya akun? <a href="register.html">Buat Akun</a>
+    </p>
+  </div>
+
+  <script>
+    let currentUserIndex = -1;
+
+    function loginUser(event) {
+      event.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+
+      const foundIndex = accounts.findIndex(
+        acc => acc.username === username && acc.password === password
+      );
+
+      if (foundIndex !== -1) {
+        localStorage.setItem('currentUser', JSON.stringify(accounts[foundIndex]));
+        window.location.href = 'dashboard.html';
+      } else {
+        document.getElementById('error-message').textContent = 'Username atau password salah!';
+        document.getElementById('recovery-section').style.display = 'block';
+        currentUserIndex = accounts.findIndex(acc => acc.username === username);
+      }
+    }
+
+    function checkSecurityAnswer() {
+      const answer = document.getElementById('securityAnswer').value.trim().toLowerCase();
+      const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+
+      if (currentUserIndex !== -1 && accounts[currentUserIndex].securityAnswer.toLowerCase() === answer) {
+        document.getElementById('reset-section').style.display = 'block';
+      } else {
+        alert('Jawaban salah atau akun tidak ditemukan.');
+      }
+    }
+
+    function saveNewAccount() {
+      const newUsername = document.getElementById('newUsername').value;
+      const newPassword = document.getElementById('newPassword').value;
+
+      const accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+
+      if (currentUserIndex !== -1) {
+        accounts[currentUserIndex].username = newUsername;
+        accounts[currentUserIndex].password = newPassword;
+        localStorage.setItem('accounts', JSON.stringify(accounts));
+        alert('Akun berhasil diperbarui. Silakan login ulang.');
+        location.reload();
+      }
+    }
+  </script>
+</body>
+</html>
